@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>30-Theme Reading Habit Builder</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const storage = {
+      get: (key) => {
+        try {
+          const value = localStorage.getItem(key);
+          return value ? JSON.parse(value) : null;
+        } catch { return null; }
+      },
+      set: (key, value) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch {}
+      }
+    };
+
+    const App = () => {
+      const [completed, setCompleted] = useState({});
+      const [logs, setLogs] = useState({});
+      const [streak, setStreak] = useState(0);
+      const [expanded, setExpanded] = useState({ 1: true });
+
+      useEffect(() => {
+        setCompleted(storage.get('books') || {});
+        setLogs(storage.get('logs') || {});
+        setStreak(storage.get('streak') || 0);
+      }, []);
+
+      const save = (books, dailyLogs, str) => {
+        storage.set('books', books);
+        storage.set('logs', dailyLogs);
+        storage.set('streak', str);
+      };
+
+      const toggle = (id) => {
+        const newCompleted = { ...completed, [id]: !completed[id] };
+        setCompleted(newCompleted);
+        save(newCompleted, logs, streak);
+      };
+
+      const logDay = () => {
+        const today = new Date().toISOString().split('T')[0];
+        const newLogs = { ...logs, [today]: true };
+        let newStreak = 0;
+        for (let i = 0; i < 365; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          if (newLogs[d.toISOString().split('T')[0]]) newStreak++;
+          else break;
+        }
+        setLogs(newLogs);
+        setStreak(newStreak);
+        save(completed, newLogs, newStreak);
+      };
+
+      const data = [
+        { phase: "Pre-Phase: PREPARATION", months: [
+          { num: 0, title: "Mental Preparation", books: [
+            { id: "m0-1", title: "How to Stop Worrying and Start Living", author: "Dale Carnegie", pages: 320 }
+          ]}
+        ]},
+        { phase: "Phase 1: HABIT FORMATION", months: [
+          { num: 1, title: "Technology & Dark Patterns", books: [
+            { id: "m1-1", title: "The Circle", author: "Dave Eggers", pages: 497 },
+            { id: "m1-2", title: "Influence: The Psychology of Persuasion", author: "Robert Cialdini", pages: 320 }
+          ]},
+          { num: 2, title: "Deep Thinking & Decision Making", books: [
+            { id: "m2-1", title: "The Remains of the Day", author: "Kazuo Ishiguro", pages: 258 },
+            { id: "m2-2", title: "Thinking, Fast and Slow", author: "Daniel Kahneman", pages: 499 },
+            { id: "m2-3", title: "Predictably Irrational", author: "Dan Ariely", pages: 384 }
+          ]},
+          { num: 3, title: "Heartwarming Growth", books: [
+            { id: "m3-1", title: "A Man Called Ove", author: "Fredrik Backman", pages: 337 },
+            { id: "m3-2", title: "The Body Keeps the Score", author: "Bessel van der Kolk", pages: 464 }
+          ]}
+        ]},
+        { phase: "Phase 2: UNDERSTANDING SELF", months: [
+          { num: 4, title: "Introversion & Inner Worlds", books: [
+            { id: "m4-1", title: "Stoner", author: "John Williams", pages: 288 },
+            { id: "m4-2", title: "Quiet: The Power of Introverts", author: "Susan Cain", pages: 368 }
+          ]},
+          { num: 5, title: "Wealth, Ambition & Society", books: [
+            { id: "m5-1", title: "The Great Gatsby", author: "F. Scott Fitzgerald", pages: 180 },
+            { id: "m5-2", title: "The Social Animal", author: "David Brooks", pages: 424 }
+          ]},
+          { num: 6, title: "Toxic Relationships & Manipulation", books: [
+            { id: "m6-1", title: "We Need to Talk About Kevin", author: "Lionel Shriver", pages: 400 },
+            { id: "m6-2", title: "The Lucifer Effect", author: "Philip Zimbardo", pages: 551 }
+          ]},
+          { num: 7, title: "Existentialism & Meaning", books: [
+            { id: "m7-1", title: "The Stranger", author: "Albert Camus", pages: 123 },
+            { id: "m7-2", title: "The Myth of Sisyphus", author: "Albert Camus", pages: 120 },
+            { id: "m7-3", title: "Man's Search for Meaning", author: "Viktor Frankl", pages: 165 }
+          ]},
+          { num: 8, title: "Flow States & Peak Performance", books: [
+            { id: "m8-1", title: "The Goldfinch", author: "Donna Tartt", pages: 771 },
+            { id: "m8-2", title: "Peak Performance", author: "Stulberg & Magness", pages: 272 }
+          ]},
+          { num: 9, title: "Dystopia & Consciousness", books: [
+            { id: "m9-1", title: "Brave New World", author: "Aldous Huxley", pages: 268 },
+            { id: "m9-2", title: "The Righteous Mind", author: "Jonathan Haidt", pages: 419 }
+          ]}
+        ]},
+        { phase: "Phase 3: FINDING MEANING", months: [
+          { num: 10, title: "Identity & Self-Discovery", books: [
+            { id: "m10-1", title: "The Amazing Adventures of Kavalier & Clay", author: "Michael Chabon", pages: 639 },
+            { id: "m10-2", title: "Sapiens", author: "Yuval Noah Harari", pages: 443 }
+          ]},
+          { num: 11, title: "Time, Death & What Matters", books: [
+            { id: "m11-1", title: "When Breath Becomes Air", author: "Paul Kalanithi", pages: 228 },
+            { id: "m11-2", title: "Being Mortal", author: "Atul Gawande", pages: 297 }
+          ]},
+          { num: 12, title: "Hope After Collapse", books: [
+            { id: "m12-1", title: "Station Eleven", author: "Emily St. John Mandel", pages: 333 },
+            { id: "m12-2", title: "Life in Spite of Everything", author: "Viktor E. Frankl", pages: 156 }
+          ]},
+          { num: 13, title: "Regret & Life Design", books: [
+            { id: "m13-1", title: "Never Let Me Go", author: "Kazuo Ishiguro", pages: 288 },
+            { id: "m13-2", title: "The Top Five Regrets of the Dying", author: "Bronnie Ware", pages: 256 }
+          ]},
+          { num: 14, title: "Memory, Identity & Brain Science", books: [
+            { id: "m14-1", title: "The Sense of an Ending", author: "Julian Barnes", pages: 163 },
+            { id: "m14-2", title: "The Tell-Tale Brain", author: "V.S. Ramachandran", pages: 357 }
+          ]},
+          { num: 15, title: "Female Power & Transformation", books: [
+            { id: "m15-1", title: "Circe", author: "Madeline Miller", pages: 400 },
+            { id: "m15-2", title: "Women Who Run With the Wolves", author: "Clarissa Pinkola Estés", pages: 520 }
+          ]}
+        ]},
+        { phase: "Phase 4: BUILDING SYSTEMS", months: [
+          { num: 16, title: "Survival & Problem-Solving", books: [
+            { id: "m16-1", title: "The Martian", author: "Andy Weir", pages: 369 },
+            { id: "m16-2", title: "Endurance", author: "Alfred Lansing", pages: 282 }
+          ]},
+          { num: 17, title: "Mystery & Deep Focus", books: [
+            { id: "m17-1", title: "The Shadow of the Wind", author: "Carlos Ruiz Zafón", pages: 487 },
+            { id: "m17-2", title: "Deep Work", author: "Cal Newport", pages: 296 }
+          ]},
+          { num: 18, title: "Habit Architecture & Life Design", books: [
+            { id: "m18-1", title: "Atomic Habits", author: "James Clear", pages: 320 },
+            { id: "m18-2", title: "Eleanor Oliphant Is Completely Fine", author: "Gail Honeyman", pages: 327 },
+            { id: "m18-3", title: "A Gentleman in Moscow", author: "Amor Towles", pages: 462 },
+            { id: "m18-4", title: "The 7 Habits of Highly Effective People", author: "Stephen Covey", pages: 380 }
+          ]},
+          { num: 19, title: "Decisions, Choice & Architecture", books: [
+            { id: "m19-1", title: "Life After Life", author: "Kate Atkinson", pages: 544 },
+            { id: "m19-2", title: "The Paradox of Choice", author: "Barry Schwartz", pages: 304 },
+            { id: "m19-3", title: "Nudge", author: "Richard Thaler & Cass Sunstein", pages: 312 }
+          ]},
+          { num: 20, title: "Epic Sci-Fi & Focus", books: [
+            { id: "m20-1", title: "Dune", author: "Frank Herbert", pages: 688 },
+            { id: "m20-2", title: "Essentialism", author: "Greg McKeown", pages: 260 }
+          ]},
+          { num: 21, title: "Systems, Nature & Principles", books: [
+            { id: "m21-1", title: "The Overstory", author: "Richard Powers", pages: 502 },
+            { id: "m21-2", title: "Principles", author: "Ray Dalio", pages: 592 },
+            { id: "m21-3", title: "Thinking in Systems", author: "Donella Meadows", pages: 240 }
+          ]},
+          { num: 22, title: "Complex Narratives & Time", books: [
+            { id: "m22-1", title: "Cloud Atlas", author: "David Mitchell", pages: 509 },
+            { id: "m22-2", title: "The Order of Time", author: "Carlo Rovelli", pages: 256 }
+          ]}
+        ]},
+        { phase: "Phase 5: CREATING SUCCESS", months: [
+          { num: 23, title: "Wealth: Deception vs. Reality", books: [
+            { id: "m23-1", title: "The Talented Mr. Ripley", author: "Patricia Highsmith", pages: 290 },
+            { id: "m23-2", title: "The Millionaire Next Door", author: "Thomas Stanley & William Danko", pages: 272 },
+            { id: "m23-3", title: "Your Money or Your Life", author: "Vicki Robin", pages: 368 }
+          ]},
+          { num: 24, title: "Learning & Growth Mindset", books: [
+            { id: "m24-1", title: "Educated", author: "Tara Westover", pages: 334 },
+            { id: "m24-2", title: "Mindset: The New Psychology of Success", author: "Carol S. Dweck", pages: 320 }
+          ]},
+          { num: 25, title: "Vision, Individualism & Innovation", books: [
+            { id: "m25-1", title: "The Fountainhead", author: "Ayn Rand", pages: 752 },
+            { id: "m25-2", title: "Zero to One", author: "Peter Thiel", pages: 224 }
+          ]},
+          { num: 26, title: "Morality, Crime & Power", books: [
+            { id: "m26-1", title: "Crime and Punishment", author: "Fyodor Dostoevsky", pages: 671 },
+            { id: "m26-2", title: "The Prince", author: "Niccolò Machiavelli", pages: 140 },
+            { id: "m26-3", title: "The 48 Laws of Power", author: "Robert Greene", pages: 452 }
+          ]},
+          { num: 27, title: "Resilience & Strategy", books: [
+            { id: "m27-1", title: "The Count of Monte Cristo", author: "Alexandre Dumas", pages: 1276 },
+            { id: "m27-2", title: "Range", author: "David Epstein", pages: 352 }
+          ]},
+          { num: 28, title: "Money Psychology & Expectations", books: [
+            { id: "m28-1", title: "Great Expectations", author: "Charles Dickens", pages: 544 },
+            { id: "m28-2", title: "The Psychology of Money", author: "Morgan Housel", pages: 256 }
+          ]},
+          { num: 29, title: "Epic Victorian Literature & Relationships", books: [
+            { id: "m29-1", title: "Middlemarch", author: "George Eliot", pages: 880 },
+            { id: "m29-2", title: "How to Win Friends and Influence People", author: "Dale Carnegie", pages: 288 },
+            { id: "m29-3", title: "Never Eat Alone", author: "Keith Ferrazzi", pages: 320 }
+          ]},
+          { num: 30, title: "Mastery & Integration", books: [
+            { id: "m30-1", title: "War and Peace", author: "Leo Tolstoy", pages: 1296 },
+            { id: "m30-2", title: "Mastery", author: "Robert Greene", pages: 352 }
+          ]}
+        ]}
+      ];
+
+      const total = data.reduce((s, p) => s + p.months.reduce((m, mo) => m + mo.books.length, 0), 0);
+      const done = Object.values(completed).filter(Boolean).length;
+      const today = new Date().toISOString().split('T')[0];
+
+      return (
+        <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen">
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">📚 30-Theme Reading Habit Builder</h1>
+            <p className="text-gray-600 mb-6">{total} books • 2.5-year journey</p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="bg-amber-100 rounded-lg p-4">
+                <div className="text-2xl font-bold text-amber-800">{done}</div>
+                <div className="text-sm text-amber-700">Books Completed</div>
+              </div>
+              <div className="bg-blue-100 rounded-lg p-4">
+                <div className="text-2xl font-bold text-blue-800">{total}</div>
+                <div className="text-sm text-blue-700">Total Books</div>
+              </div>
+              <div className="bg-green-100 rounded-lg p-4">
+                <div className="text-2xl font-bold text-green-800">{streak}</div>
+                <div className="text-sm text-green-700">Day Streak</div>
+              </div>
+              <div className="bg-purple-100 rounded-lg p-4">
+                <div className="text-2xl font-bold text-purple-800">{Math.round((done/total)*100)}%</div>
+                <div className="text-sm text-purple-700">Progress</div>
+              </div>
+            </div>
+
+            <button
+              onClick={logDay}
+              disabled={logs[today]}
+              className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                logs[today] ? 'bg-green-600 text-white cursor-not-allowed' : 'bg-amber-600 text-white hover:bg-amber-700'
+              }`}
+            >
+              {logs[today] ? "✓ You've read today!" : "📅 Log Today's Reading"}
+            </button>
+          </div>
+
+          {data.map((phase, i) => (
+            <div key={i} className="mb-8">
+              <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-lg p-4">
+                <h2 className="text-xl font-bold">{phase.phase}</h2>
+              </div>
+              {phase.months.map(month => (
+                <div key={month.num} className="bg-white border border-gray-200">
+                  <button
+                    onClick={() => setExpanded({...expanded, [month.num]: !expanded[month.num]})}
+                    className="w-full p-4 text-left hover:bg-gray-50 flex justify-between items-center"
+                  >
+                    <div>
+                      <span className="font-bold">Theme {month.num}: {month.title}</span>
+                      <span className="ml-2 text-gray-500">
+                        ({month.books.filter(b => completed[b.id]).length}/{month.books.length})
+                      </span>
+                    </div>
+                    <span>{expanded[month.num] ? '▼' : '▶'}</span>
+                  </button>
+                  {expanded[month.num] && (
+                    <div className="p-4 bg-gray-50 space-y-3">
+                      {month.books.map(book => (
+                        <div
+                          key={book.id}
+                          className={`p-4 rounded-lg border-2 transition-all ${
+                            completed[book.id] ? 'bg-green-50 border-green-500' : 'bg-white border-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              onClick={() => toggle(book.id)}
+                              className={`mt-1 w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer ${
+                                completed[book.id] ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-amber-400'
+                              }`}
+                            >
+                              {completed[book.id] && '✓'}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-800">{book.title}</div>
+                              <div className="text-sm text-gray-600">{book.author}</div>
+                              <div className="text-xs text-gray-500 mt-1">{book.pages} pages</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📈 Your Reading Journey</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p>🎯 <strong>Phase 1 (Themes 1-3):</strong> Build the habit - consistency over completion</p>
+              <p>🧠 <strong>Phase 2 (Themes 4-9):</strong> Understanding self - sustainable pace</p>
+              <p>💫 <strong>Phase 3 (Themes 10-15):</strong> Finding meaning - deeper engagement</p>
+              <p>⚙️ <strong>Phase 4 (Themes 16-22):</strong> Building systems - strong reader now</p>
+              <p>🏆 <strong>Phase 5 (Themes 23-30):</strong> Creating success - mastery level</p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
